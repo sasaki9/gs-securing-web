@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.FormLoginRequestBuilder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -36,29 +37,22 @@ public class SecuringWebApplicationTests {
 	}
 
 	@Test
-	public void loginWithValidUserThenAuthenticated() throws Exception {
-		FormLoginRequestBuilder login = formLogin()
-			.user("user")
-			.password("password");
+	void loginWithValidUserThenAuthenticated() throws Exception {
+		FormLoginRequestBuilder login = formLogin().user("user").password("password");
 
-		mockMvc.perform(login)
-			.andExpect(authenticated().withUsername("user"));
+		this.mockMvc.perform(login).andExpect(authenticated().withUsername("user"));
 	}
 
 	@Test
-	public void loginWithInvalidUserThenUnauthenticated() throws Exception {
-		FormLoginRequestBuilder login = formLogin()
-			.user("invalid")
-			.password("invalidpassword");
+	void loginWithInvalidUserThenUnauthenticated() throws Exception {
+		FormLoginRequestBuilder login = formLogin().user("invalid").password("invalidpassword");
 
-		mockMvc.perform(login)
-			.andExpect(unauthenticated());
+		this.mockMvc.perform(login).andExpect(unauthenticated());
 	}
 
 	@Test
-	public void accessUnsecuredResourceThenOk() throws Exception {
-		mockMvc.perform(get("/"))
-			.andExpect(status().isOk());
+	void accessUnsecuredResourceThenOk() throws Exception {
+		this.mockMvc.perform(get("/")).andExpect(status().isOk());
 	}
 
 	@Test
@@ -70,11 +64,10 @@ public class SecuringWebApplicationTests {
 
 	@Test
 	@WithMockUser
-	public void accessSecuredResourceAuthenticatedThenOk() throws Exception {
-		MvcResult mvcResult = mockMvc.perform(get("/hello"))
-				.andExpect(status().isOk())
-				.andReturn();
+	void accessSecuredResourceAuthenticatedThenOk() throws Exception {
+		MvcResult mvcResult = this.mockMvc.perform(get("/hello")).andExpect(status().isOk()).andReturn();
 
 		assertThat(mvcResult.getResponse().getContentAsString()).contains("Hello user!");
 	}
+
 }

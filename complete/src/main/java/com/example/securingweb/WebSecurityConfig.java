@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,10 +15,11 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-public class WebSecurityConfig {
+class WebSecurityConfig {
 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	SecurityFilterChain securityFilterChain(HttpSecurity http) {
+		// @formatter:off
 		http
 			.authorizeHttpRequests((requests) -> requests
 				.requestMatchers("/", "/home").permitAll()
@@ -27,26 +29,22 @@ public class WebSecurityConfig {
 				.loginPage("/login")
 				.permitAll()
 			)
-			.logout((logout) -> logout.permitAll());
+			.logout(LogoutConfigurer::permitAll);
+		// @formatter:on
 
 		return http.build();
 	}
 
 	@Bean
-	public PasswordEncoder passwordEncoder() {
+	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
 
 	@Bean
-	public UserDetailsService userDetailsService() {
-		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-		UserDetails user =
-			 User.builder()
-				.username("user")
-				.password(encoder.encode("password"))
-				.roles("USER")
-				.build();
-
+	UserDetailsService userDetailsService(PasswordEncoder encoder) {
+		String password = encoder.encode("password");
+		UserDetails user = User.withUsername("user").password(password).roles("USER").build();
 		return new InMemoryUserDetailsManager(user);
 	}
+
 }
